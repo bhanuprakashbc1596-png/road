@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Complaint Detail{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0"><i class="fas fa-file-alt me-2"></i>Complaint {{ complaint.complaint_id }}</h3>
+        <a href="{{ url_for('admin_complaints') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header {% if complaint.status == 'Completed' %}bg-success{% elif complaint.status == 'In Progress' %}bg-warning{% else %}bg-danger{% endif %} text-white py-3">
+                    <div class="d-flex justify-content-between">
+                        <span class="fs-5 fw-bold">{{ complaint.complaint_type }}</span>
+                        <span class="badge bg-white {% if complaint.status == 'Completed' %}text-success{% elif complaint.status == 'In Progress' %}text-dark{% else %}text-danger{% endif %} fs-6">{{ complaint.status }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <small class="text-muted">Road</small>
+                            <p class="fw-semibold mb-0">{{ complaint.road_name }} ({{ complaint.road_code }})</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Cross</small>
+                            <p class="fw-semibold mb-0">{{ complaint.cross_name or 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Severity</small>
+                            <p><span class="badge {% if complaint.severity == 'Critical' %}bg-danger{% elif complaint.severity == 'High' %}bg-warning text-dark{% elif complaint.severity == 'Medium' %}bg-info{% else %}bg-secondary{% endif %} fs-6">{{ complaint.severity }}</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Date & Time</small>
+                            <p class="fw-semibold mb-0">{{ complaint.date }} {{ complaint.time }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">GPS Location</small>
+                            <p class="fw-semibold mb-0">{{ complaint.latitude }}, {{ complaint.longitude }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Health Score</small>
+                            <p class="fw-semibold mb-0">{{ complaint.health_score or 'N/A' }}%</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="text-muted">Description</h6>
+                    <p class="bg-light p-3 rounded">{{ complaint.description }}</p>
+
+                    {% if images %}
+                    <h6 class="text-muted">Uploaded Images</h6>
+                    <div class="row g-2">
+                        {% for img in images %}
+                        <div class="col-md-4">
+                            <img src="{{ url_for('serve_upload', filename=img.image_path) }}" class="img-fluid rounded shadow-sm" style="max-height:200px;width:100%;object-fit:cover;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if complaint.admin_remark %}
+                    <div class="alert alert-info mt-3 border-0">
+                        <strong>Admin Remark:</strong> {{ complaint.admin_remark }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Citizen Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ complaint.citizen_name }}</p>
+                    <p><strong>Mobile:</strong> {{ complaint.citizen_mobile }}</p>
+                    <p><strong>Village:</strong> {{ complaint.village_name }}</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_complaint_status', complaint_id=complaint.complaint_id) }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Pending" {{ 'selected' if complaint.status == 'Pending' }}>Pending</option>
+                                <option value="In Progress" {{ 'selected' if complaint.status == 'In Progress' }}>In Progress</option>
+                                <option value="Completed" {{ 'selected' if complaint.status == 'Completed' }}>Completed</option>
+                                <option value="Rejected" {{ 'selected' if complaint.status == 'Rejected' }}>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Admin Remark</label>
+                            <textarea name="admin_remark" class="form-control" rows="3" placeholder="Add remark...">{{ complaint.admin_remark or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-2"></i>Update</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Road Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Type:</strong> {{ complaint.road_type or 'N/A' }}</p>
+                    <p><strong>Length:</strong> {{ complaint.length_m or 'N/A' }}m</p>
+                    <p><strong>Width:</strong> {{ complaint.width_m or 'N/A' }}m</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

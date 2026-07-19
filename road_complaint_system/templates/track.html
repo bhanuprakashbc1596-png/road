@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Track Complaint{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-info text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-search me-2"></i>Track Your Complaint</h4>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <i class="fas fa-clipboard-list text-info mb-3" style="font-size:4rem;opacity:0.5;"></i>
+                    <p class="text-muted mb-4">Enter your Complaint ID to check the current status</p>
+                    <form action="{{ url_for('track_result') }}" method="POST">
+                        <div class="input-group input-group-lg mb-3">
+                            <span class="input-group-text bg-white"><i class="fas fa-hashtag text-muted"></i></span>
+                            <input type="text" name="complaint_id" class="form-control" placeholder="e.g. C000001" required style="font-size:1.2rem;letter-spacing:2px;text-transform:uppercase;">
+                        </div>
+                        <button type="submit" class="btn btn-info btn-lg w-100 text-white"><i class="fas fa-search me-2"></i>Track Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Complaint Submitted{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size:5rem;"></i>
+                    </div>
+                    <h2 class="fw-bold text-success mb-3">Complaint Submitted!</h2>
+                    <p class="text-muted mb-4">Your complaint has been registered successfully. The MLA and local authorities have been notified.</p>
+                    
+                    <div class="bg-light rounded-3 p-4 mb-4">
+                        <h6 class="text-muted mb-2">Your Complaint ID</h6>
+                        <h2 class="text-primary fw-bold" style="letter-spacing:3px;">{{ complaint_id }}</h2>
+                        <small class="text-muted">Save this ID to track your complaint status</small>
+                    </div>
+
+                    <div class="row text-start mb-4">
+                        <div class="col-6">
+                            <small class="text-muted">Road</small>
+                            <p class="fw-semibold mb-0">{{ road_name }}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Cross</small>
+                            <p class="fw-semibold mb-0">{{ cross_name or 'N/A' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('track') }}" class="btn btn-primary"><i class="fas fa-search me-2"></i>Track Status</a>
+                        <a href="{{ url_for('report_form') }}" class="btn btn-outline-secondary"><i class="fas fa-plus me-2"></i>File Another Complaint</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary"><i class="fas fa-home me-2"></i>Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

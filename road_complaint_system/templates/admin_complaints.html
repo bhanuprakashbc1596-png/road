@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}All Complaints{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>All Complaints</h3>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Status</label>
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Status</option>
+                        <option value="Pending" {{ 'selected' if status_filter == 'Pending' }}>Pending</option>
+                        <option value="In Progress" {{ 'selected' if status_filter == 'In Progress' }}>In Progress</option>
+                        <option value="Completed" {{ 'selected' if status_filter == 'Completed' }}>Completed</option>
+                        <option value="Rejected" {{ 'selected' if status_filter == 'Rejected' }}>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Road</label>
+                    <select name="road" class="form-select form-select-sm">
+                        <option value="">All Roads</option>
+                        {% for r in roads %}
+                        <option value="{{ r.road_code }}" {{ 'selected' if road_filter == r.road_code }}>{{ r.road_name }} ({{ r.road_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Severity</label>
+                    <select name="severity" class="form-select form-select-sm">
+                        <option value="">All Severity</option>
+                        <option value="Low" {{ 'selected' if severity_filter == 'Low' }}>Low</option>
+                        <option value="Medium" {{ 'selected' if severity_filter == 'Medium' }}>Medium</option>
+                        <option value="High" {{ 'selected' if severity_filter == 'High' }}>High</option>
+                        <option value="Critical" {{ 'selected' if severity_filter == 'Critical' }}>Critical</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-filter me-1"></i>Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Road</th>
+                            <th>Cross</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Citizen</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in complaints %}
+                        <tr>
+                            <td><strong>{{ c.complaint_id }}</strong></td>
+                            <td>{{ c.road_name }}<br><small class="text-muted">{{ c.road_code }}</small></td>
+                            <td>{{ c.cross_name or '-' }}</td>
+                            <td>{{ c.complaint_type }}</td>
+                            <td>
+                                <span class="badge {% if c.severity == 'Critical' %}bg-danger{% elif c.severity == 'High' %}bg-warning text-dark{% elif c.severity == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ c.severity }}
+                                </span>
+                            </td>
+                            <td>{{ c.citizen_name }}<br><small class="text-muted">{{ c.citizen_mobile }}</small></td>
+                            <td>{{ c.date }}</td>
+                            <td>
+                                <span class="badge {% if c.status == 'Completed' %}bg-success{% elif c.status == 'In Progress' %}bg-warning text-dark{% elif c.status == 'Rejected' %}bg-secondary{% else %}bg-danger{% endif %}">
+                                    {{ c.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_complaint_detail', complaint_id=c.complaint_id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not complaints %}
+                        <tr><td colspan="9" class="text-center py-4 text-muted">No complaints found</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <p class="text-muted small mt-2">Total: {{ complaints|length }} complaints</p>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0"><i class="fas fa-chart-line me-2"></i>Analytics Dashboard</h3>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Road Health Overview</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="healthOverview" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Complaint Type Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="typeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Top Complaint Hotspots</h5>
+                </div>
+                <div class="card-body" style="max-height:400px;overflow-y:auto;">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr><th>#</th><th>Road</th><th>Cross</th><th>Complaints</th><th>Risk</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for h in hotspots %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ h.road_name }}</td>
+                                <td>{{ h.cross_name }}</td>
+                                <td><span class="badge bg-primary">{{ h.count }}</span></td>
+                                <td>
+                                    {% if h.count > 5 %}<span class="badge bg-danger">High</span>
+                                    {% elif h.count > 2 %}<span class="badge bg-warning text-dark">Medium</span>
+                                    {% else %}<span class="badge bg-success">Low</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Monthly Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Road Health Scores - Detailed</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Road Code</th><th>Road Name</th><th>Health Score</th><th>Total Complaints</th><th>Pending</th><th>Completed</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for r in road_health %}
+                        <tr>
+                            <td>{{ r.road_code }}</td>
+                            <td>{{ r.road_name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:10px;width:100px;">
+                                        <div class="progress-bar {% if r.health_score > 70 %}bg-success{% elif r.health_score > 40 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ r.health_score }}%"></div>
+                                    </div>
+                                    <span class="fw-bold">{{ r.health_score }}%</span>
+                                </div>
+                            </td>
+                            <td>{{ r.total }}</td>
+                            <td class="text-warning fw-bold">{{ r.pending }}</td>
+                            <td class="text-success fw-bold">{{ r.completed }}</td>
+                            <td>
+                                {% if r.health_score > 70 %}<span class="badge bg-success">Good</span>
+                                {% elif r.health_score > 40 %}<span class="badge bg-warning text-dark">Needs Attention</span>
+                                {% else %}<span class="badge bg-danger">Critical</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const hLabels = [{% for r in road_health %}'{{ r.road_name }}',{% endfor %}];
+const hScores = [{% for r in road_health %}{{ r.health_score }},{% endfor %}];
+
+new Chart(document.getElementById('healthOverview'), {
+    type: 'radar',
+    data: {
+        labels: hLabels,
+        datasets: [{
+            label: 'Health Score',
+            data: hScores,
+            backgroundColor: 'rgba(40,167,69,0.2)',
+            borderColor: '#28a745',
+            pointBackgroundColor: hScores.map(s => s > 70 ? '#28a745' : s > 40 ? '#ffc107' : '#dc3545')
+        }]
+    },
+    options: { responsive: true, scales: { r: { beginAtZero: true, max: 100 } } }
+});
+
+const tLabels = [{% for t in type_distribution %}'{{ t.complaint_type }}',{% endfor %}];
+const tCounts = [{% for t in type_distribution %}{{ t.count }},{% endfor %}];
+const palette = ['#007bff','#ffc107','#dc3545','#28a745','#17a2b8','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'];
+
+new Chart(document.getElementById('typeChart'), {
+    type: 'polarArea',
+    data: { labels: tLabels, datasets: [{ data: tCounts, backgroundColor: palette.slice(0, tLabels.length).map(c => c + '99') }] },
+    options: { responsive: true, plugins: { legend: { position: 'right' } } }
+});
+
+const mLabels = [{% for m in monthly_trends %}'{{ m.month }}',{% endfor %}];
+const mCounts = [{% for m in monthly_trends %}{{ m.count }},{% endfor %}];
+
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: { labels: mLabels, datasets: [{ label: 'Complaints', data: mCounts, borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.1)', fill: true, tension: 0.4 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

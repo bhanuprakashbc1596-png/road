@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h3>
+            <small class="text-muted">Shantinagar Village - Road Complaint Management</small>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_complaints') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-list me-1"></i>All Complaints</a>
+            <a href="{{ url_for('admin_roads') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-road me-1"></i>Roads</a>
+            <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-chart-bar me-1"></i>Analytics</a>
+            <a href="{{ url_for('generate_qr_codes') }}" class="btn btn-outline-success btn-sm"><i class="fas fa-qrcode me-1"></i>Generate QR</a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-primary border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Complaints</h6>
+                            <h2 class="fw-bold mb-0">{{ total_complaints }}</h2>
+                        </div>
+                        <div class="text-primary"><i class="fas fa-clipboard-list" style="font-size:2rem;opacity:0.3;"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-warning border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Pending</h6>
+                            <h2 class="fw-bold mb-0 text-warning">{{ pending }}</h2>
+                        </div>
+                        <div class="text-warning"><i class="fas fa-clock" style="font-size:2rem;opacity:0.3;"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-info border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">In Progress</h6>
+                            <h2 class="fw-bold mb-0 text-info">{{ in_progress }}</h2>
+                        </div>
+                        <div class="text-info"><i class="fas fa-spinner" style="font-size:2rem;opacity:0.3;"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-success border-4 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Completed</h6>
+                            <h2 class="fw-bold mb-0 text-success">{{ completed }}</h2>
+                        </div>
+                        <div class="text-success"><i class="fas fa-check-circle" style="font-size:2rem;opacity:0.3;"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary">{{ total_roads }}</h3>
+                    <p class="text-muted mb-0">Total Roads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary">{{ total_length }}m</h3>
+                    <p class="text-muted mb-0">Total Road Length</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="fw-bold text-primary">245</h3>
+                    <p class="text-muted mb-0">Total Houses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Road-wise Complaints</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="roadComplaintsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Complaint Types</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="complaintTypeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Cross-wise Hotspots</h5>
+                </div>
+                <div class="card-body" style="max-height:400px;overflow-y:auto;">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr><th>Road</th><th>Cross</th><th>Complaints</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for cs in cross_stats %}
+                            <tr>
+                                <td>{{ cs.road_name }}</td>
+                                <td>{{ cs.cross_name }}</td>
+                                <td><span class="badge bg-primary">{{ cs.complaint_count }}</span></td>
+                                <td>
+                                    {% if cs.complaint_count > 5 %}<span class="badge bg-danger">Hotspot</span>
+                                    {% elif cs.complaint_count > 2 %}<span class="badge bg-warning">Moderate</span>
+                                    {% else %}<span class="badge bg-success">Normal</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Complaints</h5>
+                </div>
+                <div class="card-body" style="max-height:400px;overflow-y:auto;">
+                    <div class="list-group list-group-flush">
+                        {% for c in recent_complaints %}
+                        <a href="{{ url_for('admin_complaint_detail', complaint_id=c.complaint_id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ c.complaint_type }} - {{ c.road_name }}</h6>
+                                    <small class="text-muted">{{ c.citizen_name }} | {{ c.cross_name }}</small>
+                                </div>
+                                <span class="badge {% if c.status == 'Completed' %}bg-success{% elif c.status == 'In Progress' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ c.status }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Road Health Scores</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="healthChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Severity Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="severityChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const roadLabels = [{% for r in road_stats %}'{{ r.road_name }}',{% endfor %}];
+const roadComplaints = [{% for r in road_stats %}{{ r.complaint_count }},{% endfor %}];
+const roadPending = [{% for r in road_stats %}{{ r.pending_count or 0 }},{% endfor %}];
+const roadCompleted = [{% for r in road_stats %}{{ r.completed_count or 0 }},{% endfor %}];
+
+new Chart(document.getElementById('roadComplaintsChart'), {
+    type: 'bar',
+    data: {
+        labels: roadLabels,
+        datasets: [
+            { label: 'Pending', data: roadPending, backgroundColor: '#ffc107' },
+            { label: 'In Progress', data: roadComplaints.map((v,i) => v - roadPending[i] - roadCompleted[i]), backgroundColor: '#17a2b8' },
+            { label: 'Completed', data: roadCompleted, backgroundColor: '#28a745' }
+        ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+});
+
+const typeLabels = [{% for t in complaint_types %}'{{ t.complaint_type }}',{% endfor %}];
+const typeCounts = [{% for t in complaint_types %}{{ t.count }},{% endfor %}];
+const colors = ['#007bff','#ffc107','#dc3545','#28a745','#17a2b8','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'];
+
+new Chart(document.getElementById('complaintTypeChart'), {
+    type: 'doughnut',
+    data: { labels: typeLabels, datasets: [{ data: typeCounts, backgroundColor: colors.slice(0, typeLabels.length) }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+});
+
+const healthLabels = [{% for r in road_health %}'{{ r.road_name }}',{% endfor %}];
+const healthScores = [{% for r in road_health %}{{ r.health_score or 100 }},{% endfor %}];
+
+new Chart(document.getElementById('healthChart'), {
+    type: 'bar',
+    data: {
+        labels: healthLabels,
+        datasets: [{
+            label: 'Health Score %',
+            data: healthScores,
+            backgroundColor: healthScores.map(s => s > 70 ? '#28a745' : s > 40 ? '#ffc107' : '#dc3545')
+        }]
+    },
+    options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { max: 100 } } }
+});
+
+const sevLabels = [{% for s in severity_stats %}'{{ s.severity }}',{% endfor %}];
+const sevCounts = [{% for s in severity_stats %}{{ s.count }},{% endfor %}];
+const sevColors = { 'Low': '#28a745', 'Medium': '#17a2b8', 'High': '#ffc107', 'Critical': '#dc3545' };
+
+new Chart(document.getElementById('severityChart'), {
+    type: 'pie',
+    data: { labels: sevLabels, datasets: [{ data: sevCounts, backgroundColor: sevLabels.map(l => sevColors[l] || '#6c757d') }] },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

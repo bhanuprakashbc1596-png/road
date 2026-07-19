@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Complaint Status{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header py-3 {% if complaint.status == 'Completed' %}bg-success{% elif complaint.status == 'In Progress' %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Complaint {{ complaint.complaint_id }}</h4>
+                        <span class="badge bg-white {% if complaint.status == 'Completed' %}text-success{% elif complaint.status == 'In Progress' %}text-warning{% else %}text-danger{% endif %} fs-6">{{ complaint.status }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Road Information</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td class="fw-semibold">Road</td><td>{{ complaint.road_name }} ({{ complaint.road_code }})</td></tr>
+                                <tr><td class="fw-semibold">Cross</td><td>{{ complaint.cross_name or 'N/A' }}</td></tr>
+                                <tr><td class="fw-semibold">Village</td><td>{{ complaint.village_name }}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">Complaint Details</h6>
+                            <table class="table table-sm table-borderless">
+                                <tr><td class="fw-semibold">Type</td><td>{{ complaint.complaint_type }}</td></tr>
+                                <tr><td class="fw-semibold">Severity</td><td><span class="badge {% if complaint.severity == 'Critical' %}bg-danger{% elif complaint.severity == 'High' %}bg-warning text-dark{% elif complaint.severity == 'Medium' %}bg-info{% else %}bg-secondary{% endif %}">{{ complaint.severity }}</span></td></tr>
+                                <tr><td class="fw-semibold">Date</td><td>{{ complaint.date }}</td></tr>
+                                <tr><td class="fw-semibold">Time</td><td>{{ complaint.time }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="text-muted mb-2">Description</h6>
+                    <p class="bg-light p-3 rounded">{{ complaint.description }}</p>
+
+                    <h6 class="text-muted mb-2">Filed By</h6>
+                    <p><strong>{{ complaint.citizen_name }}</strong> | {{ complaint.citizen_mobile }}</p>
+
+                    {% if images %}
+                    <h6 class="text-muted mb-2">Uploaded Images</h6>
+                    <div class="row g-2 mb-3">
+                        {% for img in images %}
+                        <div class="col-md-4">
+                            <img src="{{ url_for('serve_upload', filename=img.image_path) }}" class="img-fluid rounded shadow-sm" style="max-height:150px;width:100%;object-fit:cover;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if complaint.admin_remark %}
+                    <div class="alert alert-info border-0">
+                        <strong><i class="fas fa-comment me-2"></i>Admin Remark:</strong> {{ complaint.admin_remark }}
+                    </div>
+                    {% endif %}
+
+                    {% if complaint.resolved_date %}
+                    <div class="alert alert-success border-0">
+                        <i class="fas fa-check-circle me-2"></i>Resolved on {{ complaint.resolved_date }}
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('track') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Track Another</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-primary"><i class="fas fa-home me-2"></i>Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

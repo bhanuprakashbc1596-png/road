@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Roads{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0"><i class="fas fa-road me-2"></i>All Roads</h3>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Dashboard</a>
+    </div>
+
+    <div class="row g-3">
+        {% for road in roads %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 class="fw-bold mb-0">{{ road.road_name }}</h5>
+                            <small class="text-muted">{{ road.road_code }} | {{ road.road_type }}</small>
+                        </div>
+                        <span class="badge {% if road.health_score > 70 %}bg-success{% elif road.health_score > 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ road.health_score }}%
+                        </span>
+                    </div>
+                    <div class="progress mb-3" style="height:8px;">
+                        <div class="progress-bar {% if road.health_score > 70 %}bg-success{% elif road.health_score > 40 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ road.health_score }}%"></div>
+                    </div>
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <h6 class="mb-0 text-primary">{{ road.length_m }}m</h6>
+                            <small class="text-muted">Length</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="mb-0 text-primary">{{ road.width_m }}m</h6>
+                            <small class="text-muted">Width</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="mb-0 text-primary">H{{ '%03d'|format(road.houses_start) }}-H{{ '%03d'|format(road.houses_end) }}</h6>
+                            <small class="text-muted">Houses</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="badge bg-danger me-1">{{ road.complaint_count }} complaints</span>
+                            <span class="badge bg-warning text-dark">{{ road.pending_count or 0 }} pending</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{{ url_for('admin_road_detail', road_code=road.road_code) }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-arrow-right me-1"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Report Issue{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Road Complaint Form</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if road %}
+                    <div class="alert alert-info border-0 bg-light-blue mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-2"><i class="fas fa-road me-2"></i>Road Information</h6>
+                                <p class="mb-1"><strong>Road:</strong> {{ road.road_name }} ({{ road.road_code }})</p>
+                                <p class="mb-1"><strong>Type:</strong> {{ road.road_type }}</p>
+                                <p class="mb-1"><strong>Length:</strong> {{ road.length_m }}m | <strong>Width:</strong> {{ road.width_m }}m</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-2"><i class="fas fa-info-circle me-2"></i>Details</h6>
+                                <p class="mb-1"><strong>Houses:</strong> H{{ '%03d'|format(road.houses_start) }} - H{{ '%03d'|format(road.houses_end) }}</p>
+                                <p class="mb-1"><strong>Village:</strong> {{ village.name if village else 'Shantinagar' }}</p>
+                                <p class="mb-1"><strong>MLA:</strong> {{ village.mla_name if village else 'Smt. Lakshmi Devi' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>No road specified. You can still submit a complaint manually.
+                    </div>
+                    {% endif %}
+
+                    <form action="{{ url_for('submit_complaint') }}" method="POST" enctype="multipart/form-data" id="complaintForm">
+                        <input type="hidden" name="road_code" value="{{ road.road_code if road else '' }}">
+                        <input type="hidden" name="latitude" id="latitude" value="{{ road.latitude if road else '' }}">
+                        <input type="hidden" name="longitude" id="longitude" value="{{ road.longitude if road else '' }}">
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Cross / Section <span class="text-danger">*</span></label>
+                                <select name="cross_id" class="form-select" required>
+                                    <option value="">Select Cross/Section</option>
+                                    {% for cross in crosses %}
+                                    <option value="{{ cross.id }}" {{ 'selected' if preselected_cross == cross.cross_name else '' }}>{{ cross.cross_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Date & Time</label>
+                                <input type="text" class="form-control" value="{{ now if now else '' }}" readonly id="datetime">
+                            </div>
+                        </div>
+
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Your Information</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Your Name <span class="text-danger">*</span></label>
+                                <input type="text" name="citizen_name" class="form-control" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                                <input type="tel" name="citizen_mobile" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                            </div>
+                        </div>
+
+                        <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-bug me-2"></i>Problem Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Problem Type <span class="text-danger">*</span></label>
+                                <select name="complaint_type" class="form-select" required>
+                                    <option value="">Select problem type</option>
+                                    <option value="Pothole"><i class="fas fa-circle"></i> Pothole</option>
+                                    <option value="Water Logging">Water Logging</option>
+                                    <option value="Broken Drain">Broken Drain</option>
+                                    <option value="Damaged Road">Damaged Road</option>
+                                    <option value="Road Crack">Road Crack</option>
+                                    <option value="Garbage">Garbage / Debris</option>
+                                    <option value="Street Light">Street Light Issue</option>
+                                    <option value="Flooding">Flooding</option>
+                                    <option value="Broken Road Edge">Broken Road Edge</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Severity Level <span class="text-danger">*</span></label>
+                                <select name="severity" class="form-select" required>
+                                    <option value="Low">Low - Minor issue</option>
+                                    <option value="Medium" selected>Medium - Moderate issue</option>
+                                    <option value="High">High - Major issue</option>
+                                    <option value="Critical">Critical - Dangerous / Emergency</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Describe the problem in detail. Include landmarks, approximate size, and how it affects traffic or safety..." required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold"><i class="fas fa-camera me-2"></i>Upload Photos / Videos</label>
+                            <input type="file" name="photos" class="form-control" multiple accept="image/*,video/*" id="fileInput">
+                            <small class="text-muted">You can upload multiple files. Max 16MB per file. Supported: JPG, PNG, GIF, MP4</small>
+                            <div id="preview" class="mt-2 row g-2"></div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-paper-plane me-2"></i>Submit Complaint</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('datetime').value = new Date().toLocaleString();
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        document.getElementById('latitude').value = pos.coords.latitude;
+        document.getElementById('longitude').value = pos.coords.longitude;
+    });
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const preview = document.getElementById('preview');
+    preview.innerHTML = '';
+    Array.from(e.target.files).forEach(file => {
+        const col = document.createElement('div');
+        col.className = 'col-auto';
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                col.innerHTML = '<img src="' + ev.target.result + '" class="img-thumbnail" style="max-height:100px;">';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            col.innerHTML = '<div class="badge bg-secondary p-3"><i class="fas fa-video me-1"></i>' + file.name + '</div>';
+        }
+        preview.appendChild(col);
+    });
+});
+</script>
+{% endblock %}
