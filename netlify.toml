@@ -1,0 +1,11 @@
+[build]
+  command = "echo 'No build command needed'"
+  publish = "road_complaint_system/static"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/app"
+  status = 200
